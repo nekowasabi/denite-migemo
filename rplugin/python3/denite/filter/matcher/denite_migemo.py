@@ -20,7 +20,7 @@ class Filter(Base):
 
         self.vars = {
             "command": ["cmigemo"],
-            "dict_path": self.vim.vars.get("denite_migemo#dict_path"),
+            "dict_path": "/usr/share/migemo/utf-8/migemo-dict",
         }
 
     def filter(self, context):
