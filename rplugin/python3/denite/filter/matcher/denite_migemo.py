@@ -1,9 +1,11 @@
 # ============================================================================
 # FILE: matcher/denite_migemo.py
 # AUTHOR: nekowasabi
+#         Shougo Matsushita <Shougo.Matsu at gmail.com>
 # License: MIT license
 # ============================================================================
 
+import re
 import subprocess
 
 from denite.base.filter import Base
@@ -13,28 +15,30 @@ class Filter(Base):
     def __init__(self, vim):
         super().__init__(vim)
 
-        self.debug('migemo start')
-
         self.name = "matcher/migemo"
         self.description = "migemo matcher"
+
+        self.vars = {
+            "command": ["cmigemo"],
+            "dict_path": "/usr/share/migemo/utf-8/migemo-dict",
+        }
 
     def filter(self, context):
         if context["input"] == "":
             return context["candidates"]
         candidates = context["candidates"]
-        self.debug(candidates)
 
         try:
-            dict_path = "/usr/local/share/migemo/utf-8/migemo-dict"
-            process = subprocess.call(
-                ["/usr/local/bin/cmigemo", "-w", context["input"], "-d", dict_path],
-                stdout=subprocess.PIPE,
-            )
-            p = process.stdout.read().decode("utf-8")
+            pattern = subprocess.check_output(
+                self.vars["command"] + ["-w", context["input"],
+                                        "-d", self.vars["dict_path"]],
+            ).decode("utf-8").splitlines()[0]
+        except Exception as ex:
             self.debug(p)
-
-        except Exception:
             return []
-        candidates = [x for x in candidates if x["word"] in p]
+
+        # Note: "+" must be escaped
+        p = re.compile(pattern.replace("+", "\+"))
+        candidates = [x for x in candidates if p.search(x["word"])]
 
         return candidates
