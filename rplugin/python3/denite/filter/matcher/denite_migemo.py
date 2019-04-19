@@ -20,7 +20,7 @@ class Filter(Base):
 
         self.vars = {
             "command": ["cmigemo"],
-            "dict_path": "/usr/share/migemo/utf-8/migemo-dict",
+            "dict_path": self.vim.vars.get("denite_migemo#dict_path"),
         }
 
     def filter(self, context):
@@ -33,8 +33,9 @@ class Filter(Base):
                 self.vars["command"] + ["-w", context["input"],
                                         "-d", self.vars["dict_path"]],
             ).decode("utf-8").splitlines()[0]
+
         except Exception as ex:
-            self.debug(p)
+            self.debug(ex)
             return []
 
         # Note: "+" must be escaped
